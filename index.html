@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IGDown — Instagram Video, Reels & Photo Downloader</title>
+<meta name="description" content="Download Instagram videos, Reels, photos and IGTV in original quality. Free, fast, no login." />
+<style>
+  :root{
+    --bg:#0b0b12; --bg2:#12121d; --card:#171725; --line:#26263a;
+    --txt:#ececf5; --muted:#9a9ab5; --accent:#e1306c; --accent2:#f77737;
+    --grad:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);
+    --ok:#2ecc71; --err:#ff5c7a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -200px,#2a1440 0%,var(--bg) 55%) no-repeat,var(--bg);
+    color:var(--txt);line-height:1.6;min-height:100vh;
+  }
+  a{color:var(--accent2)}
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px}
+  header{padding:26px 0 8px;display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:11px;background:var(--grad);display:grid;place-items:center;font-weight:800;color:#fff;font-size:18px}
+  .brand{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{margin-left:auto;font-size:12px;color:var(--muted);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
+
+  .hero{text-align:center;padding:34px 0 10px}
+  .hero h1{font-size:clamp(26px,5vw,42px);margin:0 0 8px;letter-spacing:-.03em;line-height:1.15}
+  .hero h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted);margin:0 auto;max-width:560px}
+
+  .tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:26px 0 16px}
+  .tab{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px 15px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--txt);border-color:#3a3a58}
+  .tab.active{color:#fff;border-color:transparent;background:var(--grad)}
+
+  .panel{background:linear-gradient(180deg,#191927,#14141f);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 24px 60px -30px rgba(0,0,0,.9)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text]{
+    flex:1 1 340px;min-width:0;background:#0e0e18;border:1px solid var(--line);color:var(--txt);
+    padding:15px 16px;border-radius:13px;font-size:15px;outline:none;transition:.15s
+  }
+  input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,48,108,.18)}
+  button.go{
+    flex:0 0 auto;background:var(--grad);color:#fff;border:0;padding:15px 30px;border-radius:13px;
+    font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.02em;transition:.15s
+  }
+  button.go:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  button.go:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .hint{color:var(--muted);font-size:12.5px;margin:10px 4px 0}
+
+  .status{margin-top:16px;display:none}
+  .status.show{display:block}
+  .spinner{width:20px;height:20px;border:2.5px solid #3a3a58;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-4px;margin-right:9px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.4);color:#ffb3c2;padding:12px 14px;border-radius:12px;font-size:14px}
+
+  .results{margin-top:22px;display:grid;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-wrap:wrap}
+  .thumb{flex:1 1 260px;min-height:220px;background:#0e0e18 center/cover no-repeat;position:relative}
+  .thumb .dur{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.72);color:#fff;font-size:12px;padding:3px 8px;border-radius:7px}
+  .meta{flex:1 1 300px;padding:18px;min-width:0}
+  .meta h3{margin:0 0 4px;font-size:16px;line-height:1.35}
+  .meta .by{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .meta .cap{color:#c3c3d8;font-size:13.5px;max-height:72px;overflow:hidden;margin-bottom:14px}
+  .fmt{display:flex;align-items:center;gap:10px;background:#0e0e18;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+  .fmt .lbl{font-size:13.5px;font-weight:600}
+  .fmt .sz{font-size:12px;color:var(--muted)}
+  .fmt .sp{flex:1}
+  .dl{background:var(--grad);color:#fff;border:0;padding:9px 16px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;white-space:nowrap}
+  .dl:hover{filter:brightness(1.08)}
+  .cp{background:transparent;border:1px solid var(--line);color:var(--muted);padding:9px 12px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .cp:hover{color:var(--txt);border-color:#3a3a58}
+  .pill{display:inline-block;font-size:11px;color:#ffd9a8;border:1px solid rgba(252,176,69,.35);background:rgba(252,176,69,.08);padding:2px 8px;border-radius:999px;margin-left:6px}
+
+  section.info{margin:44px 0 10px}
+  section.info h2{font-size:20px;letter-spacing:-.02em;margin:0 0 12px}
+  .steps{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .step b{display:block;font-size:14px;margin-bottom:3px}
+  .step span{color:var(--muted);font-size:13px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-bottom:10px}
+  details summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details p{color:var(--muted);font-size:13.5px;margin:9px 0 0}
+  footer{color:var(--muted);font-size:12.5px;text-align:center;padding:34px 0 46px;border-top:1px solid var(--line);margin-top:40px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#23233a;color:#fff;padding:11px 18px;border-radius:11px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;border:1px solid var(--line)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">IG</div>
+    <div class="brand">IG<span>Down</span></div>
+    <div class="tag">No login · Free · HD</div>
+  </header>
+
+  <div class="hero">
+    <h1>Download Instagram <b>Videos, Reels &amp; Photos</b></h1>
+    <p>Paste a post, Reel or IGTV link — or an @username — and save it in original quality. No app, no signup.</p>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-kind="all">All-in-one</div>
+    <div class="tab" data-kind="reel">Reels</div>
+    <div class="tab" data-kind="video">Video</div>
+    <div class="tab" data-kind="photo">Photo</div>
+    <div class="tab" data-kind="igtv">IGTV</div>
+    <div class="tab" data-kind="profile">Profile / DP</div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <input id="q" type="text" autocomplete="off" spellcheck="false"
+             placeholder="https://www.instagram.com/reel/…  or  @username" />
+      <button class="go" id="go">SEARCH</button>
+    </div>
+    <div class="hint" id="hint">Tip: in the Instagram app tap ••• → Copy link, then paste it here.</div>
+
+    <div class="status" id="status"></div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <section class="info">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><b>1 · Copy the link</b><span>Open the Reel / post → Share → Copy link.</span></div>
+      <div class="step"><b>2 · Paste &amp; search</b><span>Drop it in the box above and hit Search.</span></div>
+      <div class="step"><b>3 · Pick quality</b><span>Choose the version you want.</span></div>
+      <div class="step"><b>4 · Download</b><span>The file saves to your device.</span></div>
+    </div>
+  </section>
+
+  <section class="info">
+    <h2>FAQ</h2>
+    <details><summary>What can I download?</summary><p>Public feed videos, Reels, photos and carousels, and IGTV. Original quality, no watermark added.</p></details>
+    <details><summary>Do I need to log in?</summary><p>No. This tool only works with public content and never asks for your Instagram password.</p></details>
+    <details><summary>Can I download private posts, Stories or Highlights?</summary><p>No. Private content, Stories and Highlights require an account login, which this tool deliberately does not do.</p></details>
+    <details><summary>Is it free? Any limit?</summary><p>Yes, free and unlimited. Please use it for personal use and respect creators' rights.</p></details>
+  </section>
+
+  <footer>
+    IGDown is an independent tool and is not affiliated with Instagram or Meta.<br>
+    Download only content you own or have permission to save.
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const qEl = $('#q'), goEl = $('#go'), statusEl = $('#status'), resultsEl = $('#results');
+let currentKind = 'all';
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  currentKind = t.dataset.kind;
+  const ph = {
+    all: 'https://www.instagram.com/reel/…  or  @username',
+    reel: 'Paste a Reel link — instagram.com/reel/…',
+    video: 'Paste a video post link — instagram.com/p/…',
+    photo: 'Paste a photo post link — instagram.com/p/…',
+    igtv: 'Paste an IGTV link — instagram.com/tv/…',
+    profile: 'Enter a username — e.g. @natgeo'
+  }[currentKind];
+  qEl.placeholder = ph;
+}));
+
+goEl.addEventListener('click', run);
+qEl.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+function fmtSize(b){
+  if (!b) return '';
+  const u = ['B','KB','MB','GB']; let i = 0;
+  while (b >= 1024 && i < u.length-1){ b /= 1024; i++; }
+  return b.toFixed(b < 10 && i > 0 ? 1 : 0) + ' ' + u[i];
+}
+function b64url(s){ return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function esc(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function run(){
+  const val = qEl.value.trim();
+  resultsEl.innerHTML = '';
+  if (!val){ showErr('Paste an Instagram link or @username first.'); return; }
+  goEl.disabled = true;
+  statusEl.className = 'status show';
+  statusEl.innerHTML = '<span class="spinner"></span>Fetching media…';
+  try{
+    const r = await fetch('/api/ig', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url: val, username: val })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Something went wrong.');
+    statusEl.className = 'status';
+    render(data);
+  }catch(e){
+    showErr(e.message);
+  }finally{
+    goEl.disabled = false;
+  }
+}
+
+function showErr(msg){
+  statusEl.className = 'status show';
+  statusEl.innerHTML = '<div class="err">' + esc(msg) + '</div>';
+}
+
+function render(data){
+  if (!data.items || !data.items.length){ showErr('No downloadable media found for this link.'); return; }
+  resultsEl.innerHTML = '';
+  data.items.forEach((it, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const thumb = it.thumbnail ? `style="background-image:url('${it.thumbnail}')"` : '';
+    const dur = it.duration ? `<span class="dur">${Math.round(it.duration)}s</span>` : '';
+    const by = it.author && (it.author.username || it.author.name)
+      ? '@' + esc(it.author.username || it.author.name) : '';
+    const fname = (it.author && it.author.username ? it.author.username : 'instagram') + '_' + (it.id || idx) + '.';
+    let fmtHtml = '';
+    (it.formats||[]).forEach(f => {
+      const ext = f.ext || 'mp4';
+      const name = fname + ext;
+      const dl = `/api/ig?action=download&u=${encodeURIComponent(b64url(f.url))}&name=${encodeURIComponent(name)}`;
+      const badge = f.has_audio === false ? '<span class="pill">no audio</span>' : '';
+      fmtHtml += `<div class="fmt">
+        <div><div class="lbl">${esc(f.label)}${badge}</div>
+        <div class="sz">${ext.toUpperCase()} ${fmtSize(f.size) ? '· ' + fmtSize(f.size) : ''}</div></div>
+        <div class="sp"></div>
+        <button class="cp" data-copy="${esc(f.url)}">Copy link</button>
+        <a class="dl" href="${dl}">Download</a>
+      </div>`;
+    });
+    card.innerHTML = `
+      <div class="thumb" ${thumb}>${dur}</div>
+      <div class="meta">
+        <h3>${esc(it.title || 'Instagram media')}</h3>
+        ${by ? `<div class="by">${by}</div>` : ''}
+        ${it.caption ? `<div class="cap">${esc(it.caption)}</div>` : ''}
+        ${fmtHtml}
+      </div>`;
+    resultsEl.appendChild(card);
+  });
+  resultsEl.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    try{ await navigator.clipboard.writeText(b.dataset.copy); toast('Direct link copied'); }
+    catch{ toast('Copy failed — long-press the button'); }
+  }));
+}
+</script>
+</body>
+</html>
