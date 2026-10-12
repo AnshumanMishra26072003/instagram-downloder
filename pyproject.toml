@@ -1,0 +1,7 @@
+
+[project]
+name = "instagram-downloader"
+version = "1.0.0"
+
+[tool.vercel]
+entrypoint = "api/ig.py"
